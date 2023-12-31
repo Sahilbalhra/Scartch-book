@@ -28,6 +28,6 @@ export const menuSlice = createSlice({
 
 export const { menuItemClick, actionItemClick } = menuSlice.actions;
 
-export const activeMenuItemState = (state: RootState) => state.MenuReducer.activeMenuItem;
+export const activeMenuItemState = (state: RootState) => state.menu.activeMenuItem;
 
 export default menuSlice.reducer;
