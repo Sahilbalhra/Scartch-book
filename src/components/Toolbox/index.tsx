@@ -7,7 +7,7 @@ import { changeColor, changeBrushSize } from "@/store/toolbox/toolboxSlice";
 
 function Toolbox() {
   const dispatch = useAppDispatch();
-  const activeMenuItem = useAppSelector(activeMenuItemState);
+  const {activeMenuItem} = useAppSelector(activeMenuItemState);
   const { color, size } = useAppSelector(
     (state) => state.toolbar[activeMenuItem]
   );

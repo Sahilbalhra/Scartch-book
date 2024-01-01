@@ -1,15 +1,50 @@
+"use client";
+import { MENU_ITEMS } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { activeMenuItemState } from "@/store/menu/menuSlice";
+import { activeMenuItemState, actionItemClick } from "@/store/menu/menuSlice";
 import { useEffect, useRef, useLayoutEffect } from "react";
 
 const Board = () => {
+  const dispatch = useAppDispatch();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawHistoryRef = useRef<any[]>([]);
+  const historyPointerRef = useRef<number>(0);
   const shouldDrawRef = useRef<boolean>(false);
-  const activeMenuItem = useAppSelector(activeMenuItemState);
+
+  const { activeMenuItem, actionMenuItem } =
+    useAppSelector(activeMenuItemState);
   const { color, size } = useAppSelector(
     (state) => state.toolbar[activeMenuItem]
   );
-  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+
+    if (actionMenuItem === MENU_ITEMS.DOWNLOAD) {
+      const URL = canvas.toDataURL();
+      const anchor = document.createElement("a");
+      anchor.href = URL;
+      anchor.download = "sketch.png";
+      anchor.click();
+    } else if (
+      actionMenuItem === MENU_ITEMS.UNDO ||
+      actionMenuItem === MENU_ITEMS.REDO
+    ) {
+      if (historyPointerRef.current > 0 && actionMenuItem === MENU_ITEMS.UNDO)
+        historyPointerRef.current -= 1;
+      if (
+        historyPointerRef.current < drawHistoryRef.current.length - 1 &&
+        actionMenuItem === MENU_ITEMS.REDO
+      )
+        historyPointerRef.current += 1;
+      const imageData = drawHistoryRef.current[historyPointerRef.current];
+      context?.putImageData(imageData, 0, 0);
+    }
+    dispatch(actionItemClick(null));
+  }, [actionMenuItem, dispatch]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -46,12 +81,24 @@ const Board = () => {
       shouldDrawRef.current = true;
       beginPath(e.clientX, e.clientY);
     };
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!shouldDrawRef.current) return;
       drawPath(e.clientX, e.clientY);
     };
-    const handleMouseUp = () => {
+
+    const handleMouseUp = (e: MouseEvent) => {
       shouldDrawRef.current = false;
+      const imageData = context?.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+      if (imageData) {
+        drawHistoryRef.current.push(imageData);
+        historyPointerRef.current = drawHistoryRef.current.length - 1;
+      }
     };
 
     canvas.addEventListener("mousedown", handleMouseDown);
@@ -64,7 +111,7 @@ const Board = () => {
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
-  return <canvas ref={canvasRef}>index</canvas>;
+  return <canvas ref={canvasRef}></canvas>;
 };
 
 export default Board;
