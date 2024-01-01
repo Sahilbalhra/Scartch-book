@@ -4,10 +4,11 @@ import { COLORS, MENU_ITEMS } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { activeMenuItemState } from "@/store/menu/menuSlice";
 import { changeColor, changeBrushSize } from "@/store/toolbox/toolboxSlice";
+import { socket } from "@/socket";
 
 function Toolbox() {
   const dispatch = useAppDispatch();
-  const {activeMenuItem} = useAppSelector(activeMenuItemState);
+  const { activeMenuItem } = useAppSelector(activeMenuItemState);
   const { color, size } = useAppSelector(
     (state) => state.toolbar[activeMenuItem]
   );
@@ -23,6 +24,8 @@ function Toolbox() {
         size: e.target.value,
       })
     );
+
+    socket.emit("changeConfig", { color: color, size: e.target.value });
   };
 
   const updateColor = (newColor: string) => {
@@ -32,6 +35,7 @@ function Toolbox() {
         color: newColor,
       })
     );
+    socket.emit("changeConfig", { color: newColor, size: size });
   };
 
   return (
