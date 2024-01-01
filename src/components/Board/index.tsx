@@ -91,14 +91,14 @@ const Board = () => {
 
     const handleMouseDown = (e: any) => {
       shouldDrawRef.current = true;
-      beginPath(e.clientX, e.clientY);
-      socket.emit("beginPath", { x: e.clientX, y: e.clientY });
+      beginPath(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY)
+      socket.emit('beginPath', {x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY})
     };
 
     const handleMouseMove = (e: any) => {
       if (!shouldDrawRef.current) return;
-      drawPath(e.clientX, e.clientY);
-      socket.emit("drawLine", { x: e.clientX, y: e.clientY });
+      drawPath(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY)
+      socket.emit("drawLine", {x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY})
     };
 
     const handleMouseUp = (e: any) => {
